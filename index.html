@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formalizador de E-mails com Gemini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo para a animação de carregamento */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="container mx-auto p-4 md:p-8 max-w-3xl w-full">
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Formalizador de E-mails</h1>
+                <p class="text-gray-500 mt-2">Cole seu texto abaixo e a IA o transformará em um e-mail formal.</p>
+            </div>
+
+            <!-- Área de Input (Campo para receber o texto) -->
+            <div class="mb-4">
+                <label for="inputText" class="block text-sm font-medium text-gray-700 mb-2">Seu texto:</label>
+                <textarea id="inputText" rows="8" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Ex: oi, preciso do relatório de vendas pra ontem. me manda aí."></textarea>
+            </div>
+
+            <!-- Botão de Ação -->
+            <div class="text-center mb-6">
+                <button id="formatButton" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                    Formalizar Texto
+                </button>
+            </div>
+            
+            <!-- Animação de Carregamento -->
+            <div id="loader" class="hidden flex justify-center my-4">
+                <div class="loader"></div>
+            </div>
+
+            <!-- Área de Output (Campo para devolver o texto) -->
+            <div id="outputContainer" class="hidden">
+                 <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-semibold text-gray-800">E-mail Formatado:</h2>
+                    <button id="copyButton" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-300 text-sm">
+                        Copiar
+                    </button>
+                </div>
+                <div id="outputText" class="w-full p-4 border bg-gray-50 border-gray-200 rounded-lg min-h-[150px] whitespace-pre-wrap"></div>
+                 <p id="copyFeedback" class="text-sm text-green-600 mt-2 text-right hidden">Copiado para a área de transferência!</p>
+            </div>
+        </div>
+        <footer class="text-center mt-6 text-gray-500 text-sm">
+            <p>Criado com a API do Gemini</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Referências aos elementos do DOM ---
+        const formatButton = document.getElementById('formatButton');
+        const inputText = document.getElementById('inputText');
+        const outputContainer = document.getElementById('outputContainer');
+        const outputText = document.getElementById('outputText');
+        const loader = document.getElementById('loader');
+        const copyButton = document.getElementById('copyButton');
+        const copyFeedback = document.getElementById('copyFeedback');
+
+        // --- Event Listener para o botão de formatar ---
+        formatButton.addEventListener('click', async () => {
+            // A chave de API agora está fixa no código.
+            const apiKey = "AIzaSyB8DEuOcAad3AGQt-Yude4-B83l8ZFayzE";
+            const userInput = inputText.value.trim();
+
+            // Validação para garantir que o texto foi inserido
+            if (!userInput) {
+                outputText.innerText = "Por favor, insira um texto para formatar.";
+                outputContainer.classList.remove('hidden');
+                return;
+            }
+
+            // --- Exibir loader e esconder resultado anterior ---
+            loader.classList.remove('hidden');
+            outputContainer.classList.add('hidden');
+            copyFeedback.classList.add('hidden');
+            formatButton.disabled = true;
+            formatButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // --- Monta o prompt para a IA ---
+            const prompt = `Reescreva o seguinte texto como um e-mail formal e profissional, em português. O tom deve ser polido, claro e objetivo. Adicione uma saudação apropriada (como "Prezado(a)," ou "Bom dia,") e uma despedida cordial (como "Atenciosamente," ou "Cordialmente,"). O texto a ser reescrito é:\n\n"${userInput}"`;
+
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            // Usa a chave de API fixa na URL
+            const apiUrl = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=\${apiKey}\`;
+
+            try {
+                // --- Faz a chamada para a API do Gemini ---
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    // Trata erros comuns de API, como chave inválida
+                    if (response.status === 400 || response.status === 403) {
+                         throw new Error('Chave de API inválida ou mal formatada. Verifique a chave no código e tente novamente.');
+                    }
+                    throw new Error(\`Erro na API: \${response.statusText}\`);
+                }
+
+                const result = await response.json();
+                
+                // --- Processa e exibe o resultado ---
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const formattedText = result.candidates[0].content.parts[0].text;
+                    outputText.innerText = formattedText;
+                } else {
+                    outputText.innerText = "Não foi possível obter uma resposta formatada da IA. A resposta pode estar vazia ou em um formato inesperado.";
+                }
+
+            } catch (error) {
+                console.error("Erro ao chamar a API do Gemini:", error);
+                outputText.innerText = \`Ocorreu um erro: \${error.message}\`;
+            } finally {
+                // --- Esconder o loader e exibir o resultado ---
+                loader.classList.add('hidden');
+                outputContainer.classList.remove('hidden');
+                formatButton.disabled = false;
+                formatButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // --- Event Listener para o botão de copiar ---
+        copyButton.addEventListener('click', () => {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = outputText.innerText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            copyFeedback.classList.remove('hidden');
+            setTimeout(() => {
+                copyFeedback.classList.add('hidden');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
