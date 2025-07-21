@@ -80,8 +80,8 @@
 
         // --- Event Listener para o botão de formatar ---
         formatButton.addEventListener('click', async () => {
-            // A chave de API agora está fixa no código.
-            const apiKey = "AIzaSyB8DEuOcAad3AGQt-Yude4-B83l8ZFayzE";
+            // A chave de API será injetada automaticamente pelo ambiente.
+            const apiKey = ""; 
             const userInput = inputText.value.trim();
 
             // Validação para garantir que o texto foi inserido
@@ -103,8 +103,7 @@
 
             let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
             const payload = { contents: chatHistory };
-            // Usa a chave de API fixa na URL
-            const apiUrl = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=\${apiKey}\`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
                 // --- Faz a chamada para a API do Gemini ---
@@ -115,11 +114,9 @@
                 });
 
                 if (!response.ok) {
-                    // Trata erros comuns de API, como chave inválida
-                    if (response.status === 400 || response.status === 403) {
-                         throw new Error('Chave de API inválida ou mal formatada. Verifique a chave no código e tente novamente.');
-                    }
-                    throw new Error(\`Erro na API: \${response.statusText}\`);
+                    const errorBody = await response.json();
+                    console.error("Erro da API:", errorBody);
+                    throw new Error(`Erro na API: ${errorBody.error.message || response.statusText}`);
                 }
 
                 const result = await response.json();
@@ -131,12 +128,14 @@
                     const formattedText = result.candidates[0].content.parts[0].text;
                     outputText.innerText = formattedText;
                 } else {
+                    // Adiciona um log para depuração caso a resposta não venha como esperado
+                    console.log("Resposta da API recebida, mas sem conteúdo válido:", result);
                     outputText.innerText = "Não foi possível obter uma resposta formatada da IA. A resposta pode estar vazia ou em um formato inesperado.";
                 }
 
             } catch (error) {
                 console.error("Erro ao chamar a API do Gemini:", error);
-                outputText.innerText = \`Ocorreu um erro: \${error.message}\`;
+                outputText.innerText = `Ocorreu um erro ao tentar formatar o texto. Por favor, tente novamente mais tarde. Detalhes: ${error.message}`;
             } finally {
                 // --- Esconder o loader e exibir o resultado ---
                 loader.classList.add('hidden');
