@@ -10,9 +10,8 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Estilo para a animação de carregamento */
         .loader {
-            border: 4px solid #f3f3f3;
+            border: 4px solid rgba(255, 255, 255, 0.3);
             border-top: 4px solid #3498db;
             border-radius: 50%;
             width: 40px;
@@ -23,25 +22,41 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="container mx-auto p-4 md:p-8 max-w-3xl w-full">
-        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Formalizador de E-mails</h1>
-                <p class="text-gray-500 mt-2">Cole seu texto abaixo e a IA o transformará em um e-mail formal.</p>
+<body class="bg-gradient-to-br from-slate-100 to-blue-200 flex items-center justify-center min-h-screen p-4">
+    <div class="container mx-auto max-w-3xl w-full">
+        <div class="glass-card rounded-2xl shadow-2xl p-6 md:p-10">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Formalizador de E-mails</h1>
+                </div>
+                <p class="text-gray-600 mt-3">Transforme qualquer rascunho em um e-mail profissional com um clique.</p>
             </div>
 
-            <!-- Área de Input (Campo para receber o texto) -->
+            <!-- Área de Input -->
             <div class="mb-4">
-                <label for="inputText" class="block text-sm font-medium text-gray-700 mb-2">Seu texto:</label>
-                <textarea id="inputText" rows="8" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Ex: oi, preciso do relatório de vendas pra ontem. me manda aí."></textarea>
+                <div class="flex justify-between items-center mb-2">
+                    <label for="inputText" class="block text-sm font-medium text-gray-700">Seu texto:</label>
+                    <button id="clearButton" class="text-xs text-gray-500 hover:text-red-600 transition-colors flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        Limpar
+                    </button>
+                </div>
+                <textarea id="inputText" rows="8" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white/50" placeholder="Ex: oi, preciso do relatório de vendas pra ontem. me manda aí."></textarea>
             </div>
 
             <!-- Botão de Ação -->
             <div class="text-center mb-6">
-                <button id="formatButton" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                <button id="formatButton" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center gap-2 mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.3 0 .6.1.8.4l4.9 4.9c.2.2.4.5.4.8v8.8c0 .8-.7 1.5-1.5 1.5H7.5c-.8 0-1.5-.7-1.5-1.5V9.1c0-.3.1-.6.4-.8l4.9-4.9c.2-.3.5-.4.8-.4Z"/><path d="M12 3v18"/></svg>
                     Formalizar Texto
                 </button>
             </div>
@@ -51,26 +66,28 @@
                 <div class="loader"></div>
             </div>
 
-            <!-- Área de Output (Campo para devolver o texto) -->
+            <!-- Área de Output -->
             <div id="outputContainer" class="hidden">
                  <div class="flex justify-between items-center mb-2">
                     <h2 class="text-xl font-semibold text-gray-800">E-mail Formatado:</h2>
-                    <button id="copyButton" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-300 text-sm">
+                    <button id="copyButton" class="bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors duration-300 text-sm flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         Copiar
                     </button>
                 </div>
-                <div id="outputText" class="w-full p-4 border bg-gray-50 border-gray-200 rounded-lg min-h-[150px] whitespace-pre-wrap"></div>
+                <div id="outputText" class="w-full p-4 border bg-slate-50/80 border-gray-200 rounded-lg min-h-[150px] whitespace-pre-wrap"></div>
                  <p id="copyFeedback" class="text-sm text-green-600 mt-2 text-right hidden">Copiado para a área de transferência!</p>
             </div>
         </div>
-        <footer class="text-center mt-6 text-gray-500 text-sm">
-            <p>Criado com a API do Gemini</p>
+        <footer class="text-center mt-8 text-gray-600 text-sm">
+            <p>Criado por Solagna.CO</p>
         </footer>
     </div>
 
     <script>
         // --- Referências aos elementos do DOM ---
         const formatButton = document.getElementById('formatButton');
+        const clearButton = document.getElementById('clearButton'); // Novo botão
         const inputText = document.getElementById('inputText');
         const outputContainer = document.getElementById('outputContainer');
         const outputText = document.getElementById('outputText');
@@ -78,27 +95,31 @@
         const copyButton = document.getElementById('copyButton');
         const copyFeedback = document.getElementById('copyFeedback');
 
+        // --- Event Listener para o botão de limpar ---
+        clearButton.addEventListener('click', () => {
+            inputText.value = '';
+            outputText.innerText = '';
+            outputContainer.classList.add('hidden');
+            copyFeedback.classList.add('hidden');
+        });
+
         // --- Event Listener para o botão de formatar ---
         formatButton.addEventListener('click', async () => {
-            // Chave de API inserida diretamente no código.
             const apiKey = "AIzaSyB8DEuOcAad3AGQt-Yude4-B83l8ZFayzE"; 
             const userInput = inputText.value.trim();
 
-            // Validação para garantir que o texto foi inserido
             if (!userInput) {
                 outputText.innerText = "Por favor, insira um texto para formatar.";
                 outputContainer.classList.remove('hidden');
                 return;
             }
 
-            // --- Exibir loader e esconder resultado anterior ---
             loader.classList.remove('hidden');
             outputContainer.classList.add('hidden');
             copyFeedback.classList.add('hidden');
             formatButton.disabled = true;
             formatButton.classList.add('opacity-50', 'cursor-not-allowed');
 
-            // --- Monta o prompt para a IA ---
             const prompt = `Reescreva o seguinte texto como um e-mail formal e profissional, em português. O tom deve ser polido, claro e objetivo. Adicione uma saudação apropriada (como "Prezado(a)," ou "Bom dia,") e uma despedida cordial (como "Atenciosamente," ou "Cordialmente,"). O texto a ser reescrito é:\n\n"${userInput}"`;
 
             let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
@@ -106,7 +127,6 @@
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
-                // --- Faz a chamada para a API do Gemini ---
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -121,14 +141,12 @@
 
                 const result = await response.json();
                 
-                // --- Processa e exibe o resultado ---
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
                     const formattedText = result.candidates[0].content.parts[0].text;
                     outputText.innerText = formattedText;
                 } else {
-                    // Adiciona um log para depuração caso a resposta não venha como esperado
                     console.log("Resposta da API recebida, mas sem conteúdo válido:", result);
                     outputText.innerText = "Não foi possível obter uma resposta formatada da IA. A resposta pode estar vazia ou em um formato inesperado.";
                 }
@@ -137,7 +155,6 @@
                 console.error("Erro ao chamar a API do Gemini:", error);
                 outputText.innerText = `Ocorreu um erro ao tentar formatar o texto. Por favor, tente novamente mais tarde. Detalhes: ${error.message}`;
             } finally {
-                // --- Esconder o loader e exibir o resultado ---
                 loader.classList.add('hidden');
                 outputContainer.classList.remove('hidden');
                 formatButton.disabled = false;
